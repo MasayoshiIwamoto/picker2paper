@@ -35,7 +35,7 @@ def test_stack_synthesizes_core_resources() -> None:
     _, template = synthesize_stack()
 
     template.resource_count_is("AWS::S3::Bucket", 2)
-    template.resource_count_is("AWS::Lambda::Function", 2)
+    template.resource_count_is("AWS::Lambda::Function", 3)
     template.resource_count_is("AWS::ApiGateway::RestApi", 1)
     template.resource_count_is("AWS::CloudFront::Distribution", 1)
     template.resource_count_is("AWS::CloudFront::OriginAccessControl", 1)
@@ -48,11 +48,14 @@ def test_lambda_environment_uses_domain_for_cors() -> None:
     assert functions, "Expected presign/manage Lambda functions to be defined"
 
     envs = [props["Properties"]["Environment"]["Variables"] for props in functions.values()]
-    for env in envs:
+    targeted_envs = [env for env in envs if "ALLOW_ORIGIN" in env]
+    assert len(targeted_envs) == 2, "Expected presign/manage Lambda envs to include ALLOW_ORIGIN"
+
+    for env in targeted_envs:
         assert env["ALLOW_ORIGIN"] == "https://uploads.example.com"
         assert "UPLOAD_BUCKET" in env
 
-    manage_env = next(env for env in envs if "UPLOAD_PREFIX" in env)
+    manage_env = next(env for env in targeted_envs if "UPLOAD_PREFIX" in env)
     assert manage_env["UPLOAD_PREFIX"] == "uploads/"
     assert manage_env["PROCESSED_PREFIX"] == "processed/"
 
