@@ -22,6 +22,26 @@ cdk deploy PhotoPickerAppStack \
   --context allowedEmailDomains="example.com" \
   --context allowedEmails="user@example.com" \
   --context cloudFrontCertificateArn=arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+# テスト / 検証
+pytest
+
+# CloudFormation テンプレートの合成結果を確認
+cdk synth PhotoPickerAppStack
+
+# 既存スタックとの差分を確認
+cdk diff PhotoPickerAppStack \
+  --context domainName=photopicker.example.com \
+  --context hostedZoneName=example.com \
+  --context manageDns=true \
+  --context siteBucketName=photopickerapp-site-ap-northeast-1-example \
+  --context uploadsBucketName=photopickerapp-uploads-ap-northeast-1-example \
+  --context uploadsPrefix=uploads/ \
+  --context processedPrefix=processed/ \
+  --context googleClientId=YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com \
+  --context allowedEmailDomains="example.com" \
+  --context allowedEmails="user@example.com" \
+  --context cloudFrontCertificateArn=arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 ```
 
 - 既存バケットを Import する場合は `useExistingSiteBucket=true` / `useExistingUploadsBucket=true` を追加し、必要な CORS やポリシーを事前設定してください。
